@@ -28,9 +28,11 @@ ${form.message}
 Téléphone: ${form.telephone}
 Email: ${form.email || "Non renseigné"}`;
 
-    const whatsappUrl = `https://api.whatsapp.com/send?phone=212769747484&text=${encodeURIComponent(msg)}`;
-
-    window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+    window.open(
+      `https://api.whatsapp.com/send?phone=212769747484&text=${encodeURIComponent(msg)}`,
+      "_blank",
+      "noopener,noreferrer"
+    );
   };
 
   const inputClass =
