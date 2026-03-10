@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { X, CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
@@ -18,6 +18,8 @@ const salles = [
   { id: "3", label: "Salle 3" },
 ];
 
+const PHONE_NUMBER = "212769747484";
+
 const ReservationModal = ({ open, onClose }: ReservationModalProps) => {
   const [salle, setSalle] = useState("");
   const [date, setDate] = useState<Date | undefined>();
@@ -30,16 +32,30 @@ const ReservationModal = ({ open, onClose }: ReservationModalProps) => {
 
   const validate = () => {
     const e: Record<string, boolean> = {};
+
     if (!salle) e.salle = true;
     if (!date) e.date = true;
     if (!tables || Number(tables) < 1) e.tables = true;
+
     setErrors(e);
     return Object.keys(e).length === 0;
   };
 
-  const selectedSalle = salles.find((s) => s.id === salle)?.label || "";
+  const isPastDay = (day: Date) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-  const whatsappUrl = useMemo(() => {
+    const compareDay = new Date(day);
+    compareDay.setHours(0, 0, 0, 0);
+
+    return compareDay < today;
+  };
+
+  const handleSubmit = () => {
+    if (!validate()) return;
+
+    const selectedSalle = salles.find((s) => s.id === salle)?.label || "";
+
     const message = `Bonjour Salle des Fêtes Elasmar Fouad,
 
 Je souhaite réserver avec les informations suivantes :
@@ -52,15 +68,9 @@ Notes : ${notes.trim() || "Aucune"}
 
 Merci de me confirmer la disponibilité.`;
 
-    return `https://wa.me/212769747484?text=${encodeURIComponent(message)}`;
-  }, [selectedSalle, date, tables, formule, notes]);
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=${PHONE_NUMBER}&text=${encodeURIComponent(message)}`;
 
-  const isPastDay = (day: Date) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const compareDay = new Date(day);
-    compareDay.setHours(0, 0, 0, 0);
-    return compareDay < today;
+    window.open(whatsappUrl, "_blank", "noopener,noreferrer");
   };
 
   return (
@@ -114,7 +124,9 @@ Merci de me confirmer la disponibilité.`;
                 ))}
               </div>
               {errors.salle && (
-                <p className="text-xs text-red-500 mt-1">Veuillez choisir une salle</p>
+                <p className="text-xs text-red-500 mt-1">
+                  Veuillez choisir une salle
+                </p>
               )}
             </div>
 
@@ -153,7 +165,9 @@ Merci de me confirmer la disponibilité.`;
                 </PopoverContent>
               </Popover>
               {errors.date && (
-                <p className="text-xs text-red-500 mt-1">Veuillez choisir une date</p>
+                <p className="text-xs text-red-500 mt-1">
+                  Veuillez choisir une date
+                </p>
               )}
             </div>
 
@@ -176,7 +190,9 @@ Merci de me confirmer la disponibilité.`;
                 placeholder="Ex: 10"
               />
               {errors.tables && (
-                <p className="text-xs text-red-500 mt-1">Veuillez indiquer le nombre de tables</p>
+                <p className="text-xs text-red-500 mt-1">
+                  Veuillez indiquer le nombre de tables
+                </p>
               )}
             </div>
 
@@ -213,11 +229,7 @@ Merci de me confirmer la disponibilité.`;
               variant="gold"
               size="lg"
               className="w-full"
-              onClick={() => {
-                if (validate()) {
-                  window.open(whatsappUrl, "_blank", "noopener,noreferrer");
-                }
-              }}
+              onClick={handleSubmit}
             >
               Confirmer la réservation
             </Button>
