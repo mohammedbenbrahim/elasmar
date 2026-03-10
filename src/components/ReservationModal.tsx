@@ -18,8 +18,6 @@ const salles = [
   { id: "3", label: "Salle 3" },
 ];
 
-const PHONE_NUMBER = "212769747484";
-
 const ReservationModal = ({ open, onClose }: ReservationModalProps) => {
   const [salle, setSalle] = useState("");
   const [date, setDate] = useState<Date | undefined>();
@@ -32,11 +30,9 @@ const ReservationModal = ({ open, onClose }: ReservationModalProps) => {
 
   const validate = () => {
     const e: Record<string, boolean> = {};
-
     if (!salle) e.salle = true;
     if (!date) e.date = true;
     if (!tables || Number(tables) < 1) e.tables = true;
-
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -56,22 +52,14 @@ Notes : ${notes.trim() || "Aucune"}
 
 Merci de me confirmer la disponibilité.`;
 
-    return `https://api.whatsapp.com/send?phone=212769747484&text=${encodeURIComponent(message)}`;
+    return `https://wa.me/212769747484?text=${encodeURIComponent(message)}`;
   }, [selectedSalle, date, tables, formule, notes]);
-
-  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    if (!validate()) {
-      e.preventDefault();
-    }
-  };
 
   const isPastDay = (day: Date) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-
     const compareDay = new Date(day);
     compareDay.setHours(0, 0, 0, 0);
-
     return compareDay < today;
   };
 
@@ -126,9 +114,7 @@ Merci de me confirmer la disponibilité.`;
                 ))}
               </div>
               {errors.salle && (
-                <p className="text-xs text-red-500 mt-1">
-                  Veuillez choisir une salle
-                </p>
+                <p className="text-xs text-red-500 mt-1">Veuillez choisir une salle</p>
               )}
             </div>
 
@@ -146,14 +132,10 @@ Merci de me confirmer la disponibilité.`;
                       !date && "text-muted-foreground",
                       errors.date && "border-red-400"
                     )}
-                    onClick={() =>
-                      setErrors((prev) => ({ ...prev, date: false }))
-                    }
+                    onClick={() => setErrors((prev) => ({ ...prev, date: false }))}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {date
-                      ? format(date, "PPP", { locale: fr })
-                      : "Sélectionner une date"}
+                    {date ? format(date, "PPP", { locale: fr }) : "Sélectionner une date"}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0 z-[110]" align="start">
@@ -171,9 +153,7 @@ Merci de me confirmer la disponibilité.`;
                 </PopoverContent>
               </Popover>
               {errors.date && (
-                <p className="text-xs text-red-500 mt-1">
-                  Veuillez choisir une date
-                </p>
+                <p className="text-xs text-red-500 mt-1">Veuillez choisir une date</p>
               )}
             </div>
 
@@ -196,9 +176,7 @@ Merci de me confirmer la disponibilité.`;
                 placeholder="Ex: 10"
               />
               {errors.tables && (
-                <p className="text-xs text-red-500 mt-1">
-                  Veuillez indiquer le nombre de tables
-                </p>
+                <p className="text-xs text-red-500 mt-1">Veuillez indiquer le nombre de tables</p>
               )}
             </div>
 
@@ -230,17 +208,19 @@ Merci de me confirmer la disponibilité.`;
               />
             </div>
 
-            <a
-              href={whatsappUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={handleClick}
-              className="block w-full"
+            <Button
+              type="button"
+              variant="gold"
+              size="lg"
+              className="w-full"
+              onClick={() => {
+                if (validate()) {
+                  window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+                }
+              }}
             >
-              <Button type="button" variant="gold" size="lg" className="w-full">
-                Confirmer la réservation
-              </Button>
-            </a>
+              Confirmer la réservation
+            </Button>
           </div>
         </div>
       </div>

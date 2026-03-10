@@ -14,7 +14,7 @@ const Contact = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const msg = `Bonjour, je suis ${form.nom}.\n\n${form.message}\n\nTéléphone: ${form.telephone}\nEmail: ${form.email}`;
-    window.open(`https://api.whatsapp.com/send?phone=212769747484&text=${encodeURIComponent(message)}`;
+    window.open(`https://wa.me/212769747484?text=${encodeURIComponent(msg)}`, "_blank", "noopener,noreferrer");
   };
 
   const inputClass =
