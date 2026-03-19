@@ -16,6 +16,8 @@ import formuleSilverImg from "@/assets/formule-silver.jpg";
 import formuleGoldImg from "@/assets/formule-gold.jpg";
 import formulePrestigeImg from "@/assets/formule-prestige.jpg";
 
+const PHONE_NUMBER = "212677772906";
+
 const salles = [
   { id: "1", label: "Salle 1", maxTables: 24, description: "Grande salle luxueuse", badge: "🥇", image: salle1Img },
   { id: "2", label: "Salle 2", maxTables: 14, description: "Salle élégante de taille moyenne", badge: "🥈", image: salle2Img },
@@ -43,13 +45,19 @@ const Reserve = () => {
 
   const validate = () => {
     const e: Record<string, string> = {};
+
     if (!salle) e.salle = "Veuillez choisir une salle";
     if (!date) e.date = "Veuillez choisir une date";
-    if (!tables || Number(tables) < 1) e.tables = "Veuillez indiquer le nombre de tables";
-    if (salle && Number(tables) > maxTables) e.tables = `Maximum ${maxTables} tables pour ${selectedSalle?.label}`;
+    if (!tables || Number(tables) < 1) {
+      e.tables = "Veuillez indiquer le nombre de tables";
+    } else if (salle && Number(tables) > maxTables) {
+      e.tables = `Maximum ${maxTables} tables pour ${selectedSalle?.label}`;
+    }
+
     if (!formule) e.formule = "Veuillez choisir une formule";
     if (!nom.trim()) e.nom = "Veuillez entrer votre nom";
     if (!telephone.trim()) e.telephone = "Veuillez entrer votre numéro";
+
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -74,7 +82,9 @@ Notes : ${notes || "Aucune"}
 
 Merci de me confirmer la disponibilité.`;
 
-    window.open(`https://wa.me/212XXXXXXXXX?text=${encodeURIComponent(message)}`, "_blank");
+    const whatsappUrl = `https://wa.me/${PHONE_NUMBER}?text=${encodeURIComponent(message)}`;
+
+    window.location.href = whatsappUrl;
   };
 
   return (
@@ -83,17 +93,20 @@ Merci de me confirmer la disponibilité.`;
 
       <main className="pt-28 pb-20">
         <div className="container mx-auto px-4 max-w-5xl">
-          {/* Title */}
           <div className="text-center mb-12">
-            <h1 className="font-serif text-3xl md:text-4xl text-foreground mb-3">Réserver Votre Salle</h1>
+            <h1 className="font-serif text-3xl md:text-4xl text-foreground mb-3">
+              Réserver Votre Salle
+            </h1>
             <div className="w-20 h-0.5 bg-gold mx-auto" />
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-14">
-            {/* SECTION 1 – Salle */}
             <section>
               <h2 className="font-serif text-xl text-foreground mb-1">🏛 Choisir la Salle</h2>
-              <p className="text-sm text-muted-foreground mb-5">Sélectionnez la salle qui correspond à votre événement</p>
+              <p className="text-sm text-muted-foreground mb-5">
+                Sélectionnez la salle qui correspond à votre événement
+              </p>
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {salles.map((s) => (
                   <button
@@ -102,7 +115,6 @@ Merci de me confirmer la disponibilité.`;
                     onClick={() => {
                       setSalle(s.id);
                       setErrors((p) => ({ ...p, salle: "" }));
-                      // Reset tables if exceeds new max
                       if (Number(tables) > s.maxTables) setTables(String(s.maxTables));
                     }}
                     className={cn(
@@ -127,6 +139,7 @@ Merci de me confirmer la disponibilité.`;
                         </div>
                       )}
                     </div>
+
                     <div className="p-4">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-lg">{s.badge}</span>
@@ -138,13 +151,14 @@ Merci de me confirmer la disponibilité.`;
                   </button>
                 ))}
               </div>
+
               {errors.salle && <p className="text-xs text-destructive mt-2">{errors.salle}</p>}
             </section>
 
-            {/* SECTION 2 – Date */}
             <section>
               <h2 className="font-serif text-xl text-foreground mb-1">📆 Date de l'Événement</h2>
               <p className="text-sm text-muted-foreground mb-4">Choisissez la date souhaitée</p>
+
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -161,21 +175,31 @@ Merci de me confirmer la disponibilité.`;
                     {date ? format(date, "PPP", { locale: fr }) : "Sélectionner une date"}
                   </Button>
                 </PopoverTrigger>
+
                 <PopoverContent className="w-auto p-0 z-[110]" align="start">
                   <Calendar
                     mode="single"
                     selected={date}
-                    onSelect={(d) => { setDate(d); setErrors((p) => ({ ...p, date: "" })); }}
-                    disabled={(d) => d < new Date()}
+                    onSelect={(d) => {
+                      setDate(d);
+                      setErrors((p) => ({ ...p, date: "" }));
+                    }}
+                    disabled={(d) => {
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      const selectedDay = new Date(d);
+                      selectedDay.setHours(0, 0, 0, 0);
+                      return selectedDay < today;
+                    }}
                     initialFocus
                     className="p-3 pointer-events-auto"
                   />
                 </PopoverContent>
               </Popover>
+
               {errors.date && <p className="text-xs text-destructive mt-2">{errors.date}</p>}
             </section>
 
-            {/* SECTION 3 – Tables */}
             <section>
               <h2 className="font-serif text-xl text-foreground mb-1">🪑 Nombre de Tables</h2>
               <p className="text-sm text-muted-foreground mb-4">
@@ -183,31 +207,43 @@ Merci de me confirmer la disponibilité.`;
                   ? `Maximum ${maxTables} tables pour ${selectedSalle.label}`
                   : "Sélectionnez d'abord une salle"}
               </p>
+
               <input
                 type="number"
                 min={1}
                 max={maxTables || undefined}
                 value={tables}
-                onChange={(e) => { setTables(e.target.value); setErrors((p) => ({ ...p, tables: "" })); }}
+                onChange={(e) => {
+                  setTables(e.target.value);
+                  setErrors((p) => ({ ...p, tables: "" }));
+                }}
                 className={cn(
                   "w-full md:w-80 border rounded-lg px-4 py-3 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-gold/40 transition-all",
                   errors.tables ? "border-destructive" : "border-input"
                 )}
                 placeholder={maxTables ? `1 – ${maxTables}` : "Ex: 10"}
               />
-              {errors.tables && <p className="text-xs text-destructive mt-2 animate-fade-in">{errors.tables}</p>}
+
+              {errors.tables && (
+                <p className="text-xs text-destructive mt-2 animate-fade-in">{errors.tables}</p>
+              )}
             </section>
 
-            {/* SECTION 4 – Formule */}
             <section>
               <h2 className="font-serif text-xl text-foreground mb-1">🍽 Choisir la Formule</h2>
-              <p className="text-sm text-muted-foreground mb-5">Sélectionnez le menu qui correspond à vos goûts</p>
+              <p className="text-sm text-muted-foreground mb-5">
+                Sélectionnez le menu qui correspond à vos goûts
+              </p>
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {formules.map((f) => (
                   <button
                     key={f.id}
                     type="button"
-                    onClick={() => { setFormule(f.id); setErrors((p) => ({ ...p, formule: "" })); }}
+                    onClick={() => {
+                      setFormule(f.id);
+                      setErrors((p) => ({ ...p, formule: "" }));
+                    }}
                     className={cn(
                       "group rounded-xl border-2 overflow-hidden text-left transition-all duration-300 hover:shadow-elegant",
                       formule === f.id
@@ -230,6 +266,7 @@ Merci de me confirmer la disponibilité.`;
                         </div>
                       )}
                     </div>
+
                     <div className="p-4">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-lg">{f.emoji}</span>
@@ -240,13 +277,16 @@ Merci de me confirmer la disponibilité.`;
                   </button>
                 ))}
               </div>
+
               {errors.formule && <p className="text-xs text-destructive mt-2">{errors.formule}</p>}
             </section>
 
-            {/* SECTION 5 – Client Info */}
             <section>
               <h2 className="font-serif text-xl text-foreground mb-1">📝 Informations Client</h2>
-              <p className="text-sm text-muted-foreground mb-5">Vos coordonnées pour la confirmation</p>
+              <p className="text-sm text-muted-foreground mb-5">
+                Vos coordonnées pour la confirmation
+              </p>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-2xl">
                 <div>
                   <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
@@ -255,7 +295,10 @@ Merci de me confirmer la disponibilité.`;
                   <input
                     type="text"
                     value={nom}
-                    onChange={(e) => { setNom(e.target.value); setErrors((p) => ({ ...p, nom: "" })); }}
+                    onChange={(e) => {
+                      setNom(e.target.value);
+                      setErrors((p) => ({ ...p, nom: "" }));
+                    }}
                     className={cn(
                       "w-full border rounded-lg px-4 py-3 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-gold/40 transition-all",
                       errors.nom ? "border-destructive" : "border-input"
@@ -264,6 +307,7 @@ Merci de me confirmer la disponibilité.`;
                   />
                   {errors.nom && <p className="text-xs text-destructive mt-1">{errors.nom}</p>}
                 </div>
+
                 <div>
                   <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
                     <Phone size={14} /> Numéro de téléphone *
@@ -271,15 +315,21 @@ Merci de me confirmer la disponibilité.`;
                   <input
                     type="tel"
                     value={telephone}
-                    onChange={(e) => { setTelephone(e.target.value); setErrors((p) => ({ ...p, telephone: "" })); }}
+                    onChange={(e) => {
+                      setTelephone(e.target.value);
+                      setErrors((p) => ({ ...p, telephone: "" }));
+                    }}
                     className={cn(
                       "w-full border rounded-lg px-4 py-3 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-gold/40 transition-all",
                       errors.telephone ? "border-destructive" : "border-input"
                     )}
                     placeholder="+212 6XX XXX XXX"
                   />
-                  {errors.telephone && <p className="text-xs text-destructive mt-1">{errors.telephone}</p>}
+                  {errors.telephone && (
+                    <p className="text-xs text-destructive mt-1">{errors.telephone}</p>
+                  )}
                 </div>
+
                 <div className="md:col-span-2">
                   <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
                     <StickyNote size={14} /> Notes supplémentaires
@@ -295,7 +345,6 @@ Merci de me confirmer la disponibilité.`;
               </div>
             </section>
 
-            {/* Submit */}
             <div className="text-center pt-4">
               <Button type="submit" variant="gold" size="xl" className="min-w-64">
                 Confirmer la réservation
