@@ -22,8 +22,8 @@ const Footer = () => (
         <div>
           <h4 className="font-serif text-lg text-gold mb-4">Contact</h4>
           <div className="flex flex-col gap-2 text-sm">
-            <span className="flex items-center gap-2"><Phone size={14} /> +212 XX XXX XXXX</span>
-            <span className="flex items-center gap-2"><MapPin size={14} /> Maroc</span>
+            <span className="flex items-center gap-2"><Phone size={14} /> +212 677-772906</span>
+            <span className="flex items-center gap-2"><MapPin size={14} /> Casablanca , Aïn Sebâa</span>
             <a
               href="https://www.instagram.com/salle_des_fetes_elasmar_fouad/"
               target="_blank"
