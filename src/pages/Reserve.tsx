@@ -12,11 +12,16 @@ import {
   UtensilsCrossed,
   LayoutGrid,
   Armchair,
+  ChevronDown,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -73,21 +78,76 @@ const menus = [
     id: "djaj-mhamer",
     label: "Djaj Mhamer",
     description: "Une proposition traditionnelle raffinée",
+    entrees: [
+      "Datte & Lait",
+      "Macaron & Chocolat & Amande & Noga",
+      "Les Salés & Thé",
+      "Les Gâteaux Soirée & Jus",
+      "Sushi",
+    ],
+    plats: [
+      "Djaj Mhamer",
+      "Poulet grillé avec légumes",
+      "Rôti de veau avec légumes",
+    ],
+    desserts: ["Glace", "Fruit de saison", "Glace & Fruit de saison"],
+    boissons: ["Thé", "Café", "Thé & Café", "Gâteaux marocains"],
   },
   {
     id: "bastilla",
     label: "Bastilla",
     description: "Un choix élégant pour les grandes occasions",
+    entrees: [
+      "Datte & Lait",
+      "Macaron & Chocolat & Amande & Noga",
+      "Les Salés & Thé",
+      "Les Gâteaux Soirée & Jus",
+      "Sushi",
+    ],
+    plats: [
+      "Pastilla Poisson",
+      "Pastilla Poulet",
+      "Pastilla duo",
+      "Rôti de veau avec légumes",
+    ],
+    desserts: ["Glace", "Fruit de saison", "Glace & Fruit de saison"],
+    boissons: ["Thé", "Café", "Thé & Café", "Gâteaux marocains"],
   },
   {
     id: "mechoui",
     label: "Méchoui",
     description: "Une formule généreuse et prestigieuse",
+    entrees: [
+      "Datte & Lait",
+      "Macaron & Chocolat & Amande & Noga",
+      "Les Salés & Thé",
+      "Les Gâteaux Soirée & Jus",
+    ],
+    plats: ["Demi agneau grillé", "Méchoui", "Tajine de boeuf"],
+    desserts: ["Glace", "Fruit de saison", "Glace & Fruit de saison"],
+    boissons: ["Thé", "Café", "Thé & Café", "Gâteaux marocains"],
   },
   {
     id: "mixte",
     label: "Menu Mixte",
     description: "Une composition variée selon vos préférences",
+    entrees: [
+      "Datte & Lait",
+      "Macaron & Chocolat & Amande & Noga",
+      "Les Salés & Thé",
+      "Les Gâteaux Soirée & Jus",
+      "Sushi",
+    ],
+    plats: [
+      "Pastilla Poisson",
+      "Pastilla Poulet",
+      "Poulet grillé avec légumes",
+      "Tajine de boeuf",
+      "Demi agneau grillé",
+      "Rôti de veau avec légumes",
+    ],
+    desserts: ["Glace", "Fruit de saison", "Glace & Fruit de saison"],
+    boissons: ["Thé", "Café", "Thé & Café", "Gâteaux marocains"],
   },
 ];
 
@@ -114,12 +174,24 @@ const Reserve = () => {
   const [date, setDate] = useState<Date>();
   const [tables, setTables] = useState("");
   const [reservationType, setReservationType] = useState("");
-  const [menu, setMenu] = useState("");
+  const [menuType, setMenuType] = useState("mechoui");
+  const [entree, setEntree] = useState("");
+  const [plat, setPlat] = useState("");
+  const [dessert, setDessert] = useState("");
+  const [boisson, setBoisson] = useState("");
   const [notes, setNotes] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const selectedSalle = useMemo(() => salles.find((s) => s.id === salle), [salle]);
+  const selectedSalle = useMemo(
+    () => salles.find((s) => s.id === salle),
+    [salle]
+  );
   const maxTables = selectedSalle?.maxTables;
+
+  const selectedMenu = useMemo(
+    () => menus.find((m) => m.id === menuType) || menus[0],
+    [menuType]
+  );
 
   const validate = () => {
     const e: Record<string, string> = {};
@@ -133,7 +205,7 @@ const Reserve = () => {
     }
 
     if (!reservationType) e.reservationType = "Veuillez choisir une option";
-    if (!menu) e.menu = "Veuillez choisir un menu";
+    if (!menuType) e.menu = "Veuillez choisir un menu";
 
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -152,12 +224,20 @@ ${selectedSalle ? `Capacité maximale : ${maxTables} tables` : ""}
 Nombre de tables réservé : ${tables}
 Date de l'événement : ${date ? format(date, "dd/MM/yyyy") : ""}
 Type de réservation : ${reservationType}
-Menu choisi : ${menu}
+
+Menu traiteur : ${selectedMenu.label}
+Entrée : ${entree || "Non choisie"}
+Plat : ${plat || "Non choisi"}
+Dessert : ${dessert || "Non choisi"}
+Boisson : ${boisson || "Non choisie"}
+
 Notes : ${notes || "Aucune"}
 
 Merci de me confirmer la disponibilité.`;
 
-    const whatsappUrl = `https://wa.me/${PHONE_NUMBER}?text=${encodeURIComponent(message)}`;
+    const whatsappUrl = `https://wa.me/${PHONE_NUMBER}?text=${encodeURIComponent(
+      message
+    )}`;
     window.location.href = whatsappUrl;
   };
 
@@ -176,26 +256,26 @@ Merci de me confirmer la disponibilité.`;
 
       <main className="relative pt-24 pb-28 md:pt-28 md:pb-24 lg:pt-32 lg:pb-28">
         <motion.div
-          className="absolute top-10 left-[-70px] h-44 w-44 sm:h-56 sm:w-56 rounded-full bg-gold/10 blur-3xl pointer-events-none"
+          className="absolute top-10 left-[-70px] h-44 w-44 rounded-full bg-gold/10 blur-3xl pointer-events-none sm:h-56 sm:w-56"
           animate={{ scale: [1, 1.15, 1], opacity: [0.4, 0.75, 0.4] }}
           transition={{ duration: 7, repeat: Infinity }}
         />
         <motion.div
-          className="absolute bottom-0 right-[-70px] h-52 w-52 sm:h-72 sm:w-72 rounded-full bg-charcoal/5 blur-3xl pointer-events-none"
+          className="absolute bottom-0 right-[-70px] h-52 w-52 rounded-full bg-charcoal/5 blur-3xl pointer-events-none sm:h-72 sm:w-72"
           animate={{ scale: [1.08, 1, 1.08], opacity: [0.3, 0.55, 0.3] }}
           transition={{ duration: 8, repeat: Infinity }}
         />
 
-        <div className="container mx-auto px-4 sm:px-5 lg:px-8 max-w-6xl relative z-10">
+        <div className="container relative z-10 mx-auto max-w-6xl px-4 sm:px-5 lg:px-8">
           <motion.div
-            className="text-center mb-10 sm:mb-12 md:mb-14 max-w-3xl mx-auto"
+            className="mx-auto mb-10 max-w-3xl text-center sm:mb-12 md:mb-14"
             variants={staggerContainer}
             initial="hidden"
             animate="visible"
           >
             <motion.div
               variants={fadeUp}
-              className="inline-flex items-center gap-2 rounded-full border border-gold/20 bg-gold/10 px-4 py-2 text-xs sm:text-sm text-gold mb-4 sm:mb-5"
+              className="mb-4 inline-flex items-center gap-2 rounded-full border border-gold/20 bg-gold/10 px-4 py-2 text-xs text-gold sm:mb-5 sm:text-sm"
             >
               <Sparkles size={16} />
               Réservation élégante et rapide
@@ -203,14 +283,14 @@ Merci de me confirmer la disponibilité.`;
 
             <motion.h1
               variants={fadeUp}
-              className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-foreground mb-3 sm:mb-4 leading-tight"
+              className="mb-3 font-serif text-3xl leading-tight text-foreground sm:text-4xl md:text-5xl lg:text-6xl"
             >
               Réserver Votre Salle
             </motion.h1>
 
             <motion.p
               variants={fadeUp}
-              className="text-muted-foreground text-sm sm:text-base lg:text-lg leading-relaxed px-1"
+              className="px-1 text-sm leading-relaxed text-muted-foreground sm:text-base lg:text-lg"
             >
               Sélectionnez votre salle, votre formule et votre menu pour envoyer
               une demande de réservation claire et raffinée.
@@ -232,20 +312,21 @@ Merci de me confirmer la disponibilité.`;
               className={cardClass}
             >
               <div className="mb-5 sm:mb-6">
-                <div className="flex items-center gap-3 mb-2">
+                <div className="mb-2 flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gold/10 text-gold">
                     <Building2 size={18} />
                   </div>
-                  <h2 className="font-serif text-xl sm:text-2xl text-foreground">
+                  <h2 className="font-serif text-xl text-foreground sm:text-2xl">
                     Choisir la Salle
                   </h2>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Cette étape est optionnelle. Vous pouvez continuer sans choisir de salle.
+                  Cette étape est optionnelle. Vous pouvez continuer sans choisir
+                  de salle.
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5 md:gap-6">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 md:gap-6 xl:grid-cols-4">
                 <motion.button
                   type="button"
                   initial={{ opacity: 0, y: 20 }}
@@ -269,12 +350,13 @@ Merci de me confirmer la disponibilité.`;
                     <Ban size={24} />
                   </div>
 
-                  <h3 className="font-serif text-lg text-foreground mb-2">
+                  <h3 className="mb-2 font-serif text-lg text-foreground">
                     Sans salle
                   </h3>
 
-                  <p className="text-sm text-muted-foreground leading-relaxed max-w-[220px]">
-                    Vous pourrez préciser votre choix ultérieurement avec notre équipe.
+                  <p className="max-w-[220px] text-sm leading-relaxed text-muted-foreground">
+                    Vous pourrez préciser votre choix ultérieurement avec notre
+                    équipe.
                   </p>
 
                   {salle === "" && (
@@ -311,7 +393,7 @@ Merci de me confirmer la disponibilité.`;
                         : "border-border hover:border-gold/40"
                     )}
                   >
-                    <div className="relative h-44 sm:h-48 overflow-hidden">
+                    <div className="relative h-44 overflow-hidden sm:h-48">
                       <img
                         src={s.image}
                         alt={s.label}
@@ -319,7 +401,7 @@ Merci de me confirmer la disponibilité.`;
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
 
-                      <div className="absolute top-3 left-3 rounded-full bg-white/90 backdrop-blur-md px-3 py-1 text-[11px] font-medium text-foreground shadow-sm">
+                      <div className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-[11px] font-medium text-foreground shadow-sm backdrop-blur-md">
                         {s.label}
                       </div>
 
@@ -327,9 +409,9 @@ Merci de me confirmer la disponibilité.`;
                         <motion.div
                           initial={{ opacity: 0, scale: 0.92 }}
                           animate={{ opacity: 1, scale: 1 }}
-                          className="absolute inset-0 bg-gold/15 flex items-center justify-center"
+                          className="absolute inset-0 flex items-center justify-center bg-gold/15"
                         >
-                          <span className="bg-white text-foreground px-4 py-2 rounded-full text-xs sm:text-sm font-medium inline-flex items-center gap-2 shadow-lg">
+                          <span className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-medium text-foreground shadow-lg sm:text-sm">
                             <CheckCircle2 size={16} className="text-gold" />
                             Sélectionnée
                           </span>
@@ -338,8 +420,12 @@ Merci de me confirmer la disponibilité.`;
                     </div>
 
                     <div className="p-5">
-                      <h3 className="font-serif text-lg text-foreground mb-1">{s.label}</h3>
-                      <p className="text-sm text-muted-foreground mb-3">{s.description}</p>
+                      <h3 className="mb-1 font-serif text-lg text-foreground">
+                        {s.label}
+                      </h3>
+                      <p className="mb-3 text-sm text-muted-foreground">
+                        {s.description}
+                      </p>
                       <div className="inline-flex items-center gap-2 rounded-full bg-gold/10 px-3 py-1 text-xs font-medium text-gold">
                         <LayoutGrid size={14} />
                         {s.maxTables} tables maximum
@@ -350,7 +436,7 @@ Merci de me confirmer la disponibilité.`;
               </div>
             </motion.section>
 
-            <div className="grid lg:grid-cols-2 gap-5 sm:gap-6 md:gap-8 items-start">
+            <div className="grid items-start gap-5 sm:gap-6 md:gap-8 lg:grid-cols-2">
               <motion.section
                 variants={fadeUp}
                 initial="hidden"
@@ -358,16 +444,16 @@ Merci de me confirmer la disponibilité.`;
                 viewport={{ once: true, amount: 0.12 }}
                 className={cardClass}
               >
-                <div className="flex items-center gap-3 mb-2">
+                <div className="mb-2 flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gold/10 text-gold">
                     <CalendarIcon size={18} />
                   </div>
-                  <h2 className="font-serif text-xl sm:text-2xl text-foreground">
+                  <h2 className="font-serif text-xl text-foreground sm:text-2xl">
                     Date de l'Événement
                   </h2>
                 </div>
 
-                <p className="text-sm text-muted-foreground mb-5">
+                <p className="mb-5 text-sm text-muted-foreground">
                   Choisissez la date souhaitée
                 </p>
 
@@ -377,7 +463,7 @@ Merci de me confirmer la disponibilité.`;
                       type="button"
                       variant="outline"
                       className={cn(
-                        "w-full justify-start rounded-2xl text-left font-normal min-h-[52px] border-border/70 bg-background/90 px-4",
+                        "w-full justify-start rounded-2xl border-border/70 bg-background/90 px-4 text-left font-normal min-h-[52px]",
                         !date && "text-muted-foreground",
                         errors.date && "border-destructive"
                       )}
@@ -393,7 +479,7 @@ Merci de me confirmer la disponibilité.`;
                   </PopoverTrigger>
 
                   <PopoverContent
-                    className="w-auto p-0 z-[110] rounded-2xl max-w-[95vw]"
+                    className="z-[110] w-auto max-w-[95vw] rounded-2xl p-0"
                     align="start"
                   >
                     <Calendar
@@ -411,13 +497,13 @@ Merci de me confirmer la disponibilité.`;
                         return selectedDay < today;
                       }}
                       initialFocus
-                      className="p-3 pointer-events-auto"
+                      className="pointer-events-auto p-3"
                     />
                   </PopoverContent>
                 </Popover>
 
                 {errors.date && (
-                  <p className="text-xs text-destructive mt-3">{errors.date}</p>
+                  <p className="mt-3 text-xs text-destructive">{errors.date}</p>
                 )}
               </motion.section>
 
@@ -428,16 +514,16 @@ Merci de me confirmer la disponibilité.`;
                 viewport={{ once: true, amount: 0.12 }}
                 className={cardClass}
               >
-                <div className="flex items-center gap-3 mb-2">
+                <div className="mb-2 flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gold/10 text-gold">
                     <Armchair size={18} />
                   </div>
-                  <h2 className="font-serif text-xl sm:text-2xl text-foreground">
+                  <h2 className="font-serif text-xl text-foreground sm:text-2xl">
                     Nombre de Tables
                   </h2>
                 </div>
 
-                <p className="text-sm text-muted-foreground mb-5 leading-relaxed">
+                <p className="mb-5 text-sm leading-relaxed text-muted-foreground">
                   {selectedSalle
                     ? `Maximum ${maxTables} tables pour ${selectedSalle.label}`
                     : "Vous pouvez saisir le nombre de tables même sans choisir une salle"}
@@ -461,7 +547,7 @@ Merci de me confirmer la disponibilité.`;
                   <motion.p
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="text-xs text-destructive mt-3"
+                    className="mt-3 text-xs text-destructive"
                   >
                     {errors.tables}
                   </motion.p>
@@ -476,22 +562,25 @@ Merci de me confirmer la disponibilité.`;
               viewport={{ once: true, amount: 0.12 }}
               className={cardClass}
             >
-              <div className="flex items-center gap-3 mb-2">
+              <div className="mb-2 flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gold/10 text-gold">
                   <UtensilsCrossed size={18} />
                 </div>
-                <h2 className="font-serif text-xl sm:text-2xl text-foreground">
+                <h2 className="font-serif text-xl text-foreground sm:text-2xl">
                   Choisir l’Option et le Menu
                 </h2>
               </div>
 
-              <p className="text-sm text-muted-foreground mb-6">
-                Sélectionnez d’abord le type de réservation puis le menu souhaité.
+              <p className="mb-6 text-sm text-muted-foreground">
+                Sélectionnez d’abord le type de réservation puis le menu
+                souhaité.
               </p>
 
               <div className="mb-8">
-                <h3 className="font-serif text-lg text-foreground mb-4">Option</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <h3 className="mb-4 font-serif text-lg text-foreground">
+                  Option
+                </h3>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   {reservationTypes.map((item) => (
                     <button
                       key={item.id}
@@ -501,7 +590,7 @@ Merci de me confirmer la disponibilité.`;
                         setErrors((p) => ({ ...p, reservationType: "" }));
                       }}
                       className={cn(
-                        "rounded-[24px] border overflow-hidden text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_50px_rgba(0,0,0,0.06)]",
+                        "overflow-hidden rounded-[24px] border text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_50px_rgba(0,0,0,0.06)]",
                         reservationType === item.label
                           ? "border-gold bg-gold/5 ring-2 ring-gold/20"
                           : "border-border bg-white hover:border-gold/40",
@@ -512,11 +601,11 @@ Merci de me confirmer la disponibilité.`;
                         <img
                           src={item.image}
                           alt={item.label}
-                          className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+                          className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent" />
 
-                        <div className="absolute top-3 left-3 rounded-full bg-white/90 backdrop-blur-md px-3 py-1 text-[11px] font-medium text-foreground shadow-sm">
+                        <div className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-[11px] font-medium text-foreground shadow-sm backdrop-blur-md">
                           {item.label}
                         </div>
 
@@ -524,9 +613,9 @@ Merci de me confirmer la disponibilité.`;
                           <motion.div
                             initial={{ opacity: 0, scale: 0.92 }}
                             animate={{ opacity: 1, scale: 1 }}
-                            className="absolute inset-0 bg-gold/15 flex items-center justify-center"
+                            className="absolute inset-0 flex items-center justify-center bg-gold/15"
                           >
-                            <span className="bg-white text-foreground px-4 py-2 rounded-full text-xs sm:text-sm font-medium inline-flex items-center gap-2 shadow-lg">
+                            <span className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-medium text-foreground shadow-lg sm:text-sm">
                               <CheckCircle2 size={16} className="text-gold" />
                               Sélectionnée
                             </span>
@@ -534,18 +623,21 @@ Merci de me confirmer la disponibilité.`;
                         )}
                       </div>
 
-                      <div className="p-5 flex items-start justify-between gap-3">
+                      <div className="flex items-start justify-between gap-3 p-5">
                         <div>
-                          <h4 className="font-serif text-lg text-foreground mb-1">
+                          <h4 className="mb-1 font-serif text-lg text-foreground">
                             {item.label}
                           </h4>
-                          <p className="text-sm text-muted-foreground leading-relaxed">
+                          <p className="text-sm leading-relaxed text-muted-foreground">
                             {item.description}
                           </p>
                         </div>
 
                         {reservationType === item.label && (
-                          <CheckCircle2 className="text-gold shrink-0" size={18} />
+                          <CheckCircle2
+                            className="shrink-0 text-gold"
+                            size={18}
+                          />
                         )}
                       </div>
                     </button>
@@ -553,49 +645,117 @@ Merci de me confirmer la disponibilité.`;
                 </div>
 
                 {errors.reservationType && (
-                  <p className="text-xs text-destructive mt-3">{errors.reservationType}</p>
+                  <p className="mt-3 text-xs text-destructive">
+                    {errors.reservationType}
+                  </p>
                 )}
               </div>
 
               <div>
-                <h3 className="font-serif text-lg text-foreground mb-4">Menu Traiteur</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {menus.map((item) => (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => {
-                        setMenu(item.label);
-                        setErrors((p) => ({ ...p, menu: "" }));
-                      }}
-                      className={cn(
-                        "rounded-[24px] border p-5 text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_50px_rgba(0,0,0,0.06)]",
-                        menu === item.label
-                          ? "border-gold bg-gold/5 ring-2 ring-gold/20"
-                          : "border-border bg-white hover:border-gold/40",
-                        errors.menu && "border-destructive"
-                      )}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <h4 className="font-serif text-lg text-foreground mb-1">
-                            {item.label}
-                          </h4>
-                          <p className="text-sm text-muted-foreground leading-relaxed">
-                            {item.description}
-                          </p>
-                        </div>
+                <h3 className="mb-4 font-serif text-lg text-foreground">
+                  Menu Traiteur
+                </h3>
 
-                        {menu === item.label && (
-                          <CheckCircle2 className="text-gold shrink-0" size={18} />
-                        )}
+                <div className="rounded-[32px] bg-[#fbfaf8] p-6 shadow-sm">
+                 
+
+                  <div className="rounded-[28px] border border-[#e7ded4] bg-white p-6">
+                    <p className="mb-4 text-sm text-[#8a8178]">
+                      Choisissez les options du menu sélectionné
+                    </p>
+
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                      <div>
+                        <label className="mb-2 block text-sm font-medium text-[#5c544d]">
+                          Entrée
+                        </label>
+                        <div className="relative">
+                          <select
+                            value={entree}
+                            onChange={(e) => setEntree(e.target.value)}
+                            className="h-14 w-full appearance-none rounded-2xl border border-[#e7ded4] bg-[#fcfbf8] px-4 pr-12 text-[15px] text-[#2d2926] outline-none focus:border-[#d4a017] focus:ring-2 focus:ring-[#d4a017]/20"
+                          >
+                            <option value="">Choisir une entrée</option>
+                            {selectedMenu.entrees.map((item) => (
+                              <option key={item} value={item}>
+                                {item}
+                              </option>
+                            ))}
+                          </select>
+                          <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#8a8178]" />
+                        </div>
                       </div>
-                    </button>
-                  ))}
+
+                      <div>
+                        <label className="mb-2 block text-sm font-medium text-[#5c544d]">
+                          Plat
+                        </label>
+                        <div className="relative">
+                          <select
+                            value={plat}
+                            onChange={(e) => setPlat(e.target.value)}
+                            className="h-14 w-full appearance-none rounded-2xl border border-[#e7ded4] bg-[#fcfbf8] px-4 pr-12 text-[15px] text-[#2d2926] outline-none focus:border-[#d4a017] focus:ring-2 focus:ring-[#d4a017]/20"
+                          >
+                            <option value="">Choisir un plat</option>
+                            {selectedMenu.plats.map((item) => (
+                              <option key={item} value={item}>
+                                {item}
+                              </option>
+                            ))}
+                          </select>
+                          <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#8a8178]" />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="mb-2 block text-sm font-medium text-[#5c544d]">
+                          Dessert
+                        </label>
+                        <div className="relative">
+                          <select
+                            value={dessert}
+                            onChange={(e) => setDessert(e.target.value)}
+                            className="h-14 w-full appearance-none rounded-2xl border border-[#e7ded4] bg-[#fcfbf8] px-4 pr-12 text-[15px] text-[#2d2926] outline-none focus:border-[#d4a017] focus:ring-2 focus:ring-[#d4a017]/20"
+                          >
+                            <option value="">Choisir un dessert</option>
+                            {selectedMenu.desserts.map((item) => (
+                              <option key={item} value={item}>
+                                {item}
+                              </option>
+                            ))}
+                          </select>
+                          <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#8a8178]" />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="mb-2 block text-sm font-medium text-[#5c544d]">
+                          Boisson
+                        </label>
+                        <div className="relative">
+                          <select
+                            value={boisson}
+                            onChange={(e) => setBoisson(e.target.value)}
+                            className="h-14 w-full appearance-none rounded-2xl border border-[#e7ded4] bg-[#fcfbf8] px-4 pr-12 text-[15px] text-[#2d2926] outline-none focus:border-[#d4a017] focus:ring-2 focus:ring-[#d4a017]/20"
+                          >
+                            <option value="">Choisir une boisson</option>
+                            {selectedMenu.boissons.map((item) => (
+                              <option key={item} value={item}>
+                                {item}
+                              </option>
+                            ))}
+                          </select>
+                          <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#8a8178]" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 {errors.menu && (
-                  <p className="text-xs text-destructive mt-3">{errors.menu}</p>
+                  <p className="mt-3 text-xs text-destructive">
+                    {errors.menu}
+                  </p>
                 )}
               </div>
             </motion.section>
@@ -607,16 +767,16 @@ Merci de me confirmer la disponibilité.`;
               viewport={{ once: true, amount: 0.12 }}
               className={cardClass}
             >
-              <div className="flex items-center gap-3 mb-2">
+              <div className="mb-2 flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gold/10 text-gold">
                   <StickyNote size={18} />
                 </div>
-                <h2 className="font-serif text-xl sm:text-2xl text-foreground">
+                <h2 className="font-serif text-xl text-foreground sm:text-2xl">
                   Notes supplémentaires
                 </h2>
               </div>
 
-              <p className="text-sm text-muted-foreground mb-5">
+              <p className="mb-5 text-sm text-muted-foreground">
                 Ajoutez des précisions si nécessaire.
               </p>
 
@@ -634,13 +794,13 @@ Merci de me confirmer la disponibilité.`;
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.55 }}
-              className="hidden md:flex justify-center pt-2"
+              className="hidden justify-center pt-2 md:flex"
             >
               <Button
                 type="submit"
                 variant="gold"
                 size="xl"
-                className="min-w-[320px] group rounded-2xl shadow-[0_16px_40px_rgba(212,175,55,0.18)]"
+                className="group min-w-[320px] rounded-2xl shadow-[0_16px_40px_rgba(212,175,55,0.18)]"
               >
                 Confirmer la réservation
                 <ArrowRight
@@ -650,11 +810,11 @@ Merci de me confirmer la disponibilité.`;
               </Button>
             </motion.div>
 
-            <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-black/5 bg-warm-white/95 backdrop-blur-xl px-4 py-3 safe-area-inset-bottom">
+            <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-black/5 bg-warm-white/95 px-4 py-3 backdrop-blur-xl safe-area-inset-bottom md:hidden">
               <Button
                 type="submit"
                 variant="gold"
-                className="w-full h-12 rounded-2xl group text-sm"
+                className="group h-12 w-full rounded-2xl text-sm"
               >
                 Confirmer la réservation
                 <ArrowRight

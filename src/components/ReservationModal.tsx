@@ -8,6 +8,7 @@ import {
   MessageSquare,
   PartyPopper,
   CheckCircle2,
+  ChevronDown,
 } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -38,16 +39,104 @@ const formules = [
   { value: "Prestige", label: "Formule Prestige", icon: "👑" },
 ];
 
+const traiteurMenus = [
+  {
+    value: "Djaj Mhamer",
+    label: "Djaj Mhamer",
+    subtitle: "Une proposition traditionnelle raffinée",
+    entrees: [
+      "Datte & Lait",
+      "Macaron & Chocolat & Amande & Noga",
+      "Les Salés & Thé",
+      "Les Gâteaux Soirée & Jus",
+      "Sushi",
+    ],
+    plats: [
+      "Djaj Mhamer",
+      "Poulet grillé avec légumes",
+      "Rôti de veau avec légumes",
+    ],
+    desserts: ["Glace", "Fruit de saison", "Glace & Fruit de saison"],
+    boissons: ["Thé", "Café", "Thé & Café", "Gâteaux marocains"],
+  },
+  {
+    value: "Bastilla",
+    label: "Bastilla",
+    subtitle: "Un choix élégant pour les grandes occasions",
+    entrees: [
+      "Datte & Lait",
+      "Macaron & Chocolat & Amande & Noga",
+      "Les Salés & Thé",
+      "Les Gâteaux Soirée & Jus",
+      "Sushi",
+    ],
+    plats: [
+      "Pastilla Poisson",
+      "Pastilla Poulet",
+      "Pastilla duo",
+      "Rôti de veau avec légumes",
+    ],
+    desserts: ["Glace", "Fruit de saison", "Glace & Fruit de saison"],
+    boissons: ["Thé", "Café", "Thé & Café", "Gâteaux marocains"],
+  },
+  {
+    value: "Méchoui",
+    label: "Méchoui",
+    subtitle: "Une formule généreuse et prestigieuse",
+    entrees: [
+      "Datte & Lait",
+      "Macaron & Chocolat & Amande & Noga",
+      "Les Salés & Thé",
+      "Les Gâteaux Soirée & Jus",
+    ],
+    plats: ["Demi agneau grillé", "Méchoui", "Tajine de boeuf"],
+    desserts: ["Glace", "Fruit de saison", "Glace & Fruit de saison"],
+    boissons: ["Thé", "Café", "Thé & Café", "Gâteaux marocains"],
+  },
+  {
+    value: "Menu Mixte",
+    label: "Menu Mixte",
+    subtitle: "Une composition variée selon vos préférences",
+    entrees: [
+      "Datte & Lait",
+      "Macaron & Chocolat & Amande & Noga",
+      "Les Salés & Thé",
+      "Les Gâteaux Soirée & Jus",
+      "Sushi",
+    ],
+    plats: [
+      "Pastilla Poisson",
+      "Pastilla Poulet",
+      "Poulet grillé avec légumes",
+      "Tajine de boeuf",
+      "Demi agneau grillé",
+      "Rôti de veau avec légumes",
+    ],
+    desserts: ["Glace", "Fruit de saison", "Glace & Fruit de saison"],
+    boissons: ["Thé", "Café", "Thé & Café", "Gâteaux marocains"],
+  },
+];
+
 const ReservationModal = ({ open, onClose }: ReservationModalProps) => {
   const [salle, setSalle] = useState("");
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [tables, setTables] = useState("");
   const [formule, setFormule] = useState("Silver");
   const [notes, setNotes] = useState("");
+
+  const [menuType, setMenuType] = useState("Méchoui");
+  const [entree, setEntree] = useState("");
+  const [plat, setPlat] = useState("");
+  const [dessert, setDessert] = useState("");
+  const [boisson, setBoisson] = useState("");
+
   const [errors, setErrors] = useState<Record<string, boolean>>({});
 
   const selectedSalleLabel =
     salles.find((s) => s.id === salle)?.label || "Votre sélection";
+
+  const selectedMenu =
+    traiteurMenus.find((menu) => menu.value === menuType) || traiteurMenus[0];
 
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
@@ -86,10 +175,10 @@ const ReservationModal = ({ open, onClose }: ReservationModalProps) => {
     return compareDay < today;
   };
 
-const handleSubmit = () => {
-  if (!validate()) return;
+  const handleSubmit = () => {
+    if (!validate()) return;
 
-  const message = `Bonjour Salle des Fêtes Elasmar Fouad,
+    const message = `Bonjour Salle des Fêtes Elasmar Fouad,
 
 Je souhaite réserver avec les informations suivantes :
 
@@ -97,15 +186,24 @@ Salle choisie : ${selectedSalleLabel}
 Date : ${date ? format(date, "dd/MM/yyyy") : ""}
 Nombre de tables : ${tables}
 Formule choisie : ${formule}
+
+Menu traiteur : ${selectedMenu.label}
+Entrée : ${entree || "Non choisie"}
+Plat : ${plat || "Non choisi"}
+Dessert : ${dessert || "Non choisi"}
+Boisson : ${boisson || "Non choisie"}
+
 Notes : ${notes.trim() || "Aucune"}
 
 Merci de me confirmer la disponibilité.`;
 
-  const url = `https://wa.me/${PHONE_NUMBER}?text=${encodeURIComponent(message)}`;
+    const url = `https://wa.me/${PHONE_NUMBER}?text=${encodeURIComponent(
+      message
+    )}`;
 
-  // FORCE redirect (no popup, no rewrite)
-  window.location.replace(url);
-};
+    window.location.replace(url);
+  };
+
   if (!open) return null;
 
   return (
@@ -146,8 +244,9 @@ Merci de me confirmer la disponibilité.`;
               </h2>
 
               <p className="mt-4 text-sm leading-6 text-white/75">
-                Choisissez la salle, la date, le nombre de tables et la formule.
-                Votre demande sera envoyée directement sur WhatsApp.
+                Choisissez la salle, la date, le nombre de tables, la formule et
+                le menu traiteur. Votre demande sera envoyée directement sur
+                WhatsApp.
               </p>
 
               <div className="mt-8 space-y-4">
@@ -169,11 +268,24 @@ Merci de me confirmer la disponibilité.`;
                   </p>
                 </div>
 
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <p className="text-xs uppercase tracking-[0.2em] text-white/60">
+                    Menu traiteur
+                  </p>
+                  <div className="mt-3 space-y-1 text-sm text-white/85">
+                    <p>Menu : {selectedMenu.label}</p>
+                    <p>Entrée : {entree || "—"}</p>
+                    <p>Plat : {plat || "—"}</p>
+                    <p>Dessert : {dessert || "—"}</p>
+                    <p>Boisson : {boisson || "—"}</p>
+                  </div>
+                </div>
+
                 <div className="flex items-start gap-3 rounded-2xl border border-emerald-300/20 bg-emerald-400/10 p-4">
                   <CheckCircle2 className="mt-0.5 h-5 w-5 text-emerald-300" />
                   <p className="text-sm leading-6 text-white/80">
-                    Après validation, un message WhatsApp prérempli s’ouvrira pour
-                    confirmer votre demande de réservation.
+                    Après validation, un message WhatsApp prérempli s’ouvrira
+                    pour confirmer votre demande de réservation.
                   </p>
                 </div>
               </div>
@@ -326,6 +438,147 @@ Merci de me confirmer la disponibilité.`;
                       <p className="mt-2 text-lg">{item.icon}</p>
                     </button>
                   ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  Menu Traiteur
+                </label>
+
+                <div className="rounded-[32px] bg-[#fbfaf8] p-6 shadow-sm">
+                  <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                    {traiteurMenus.map((menu) => {
+                      const isActive = menuType === menu.value;
+
+                      return (
+                        <button
+                          key={menu.value}
+                          type="button"
+                          onClick={() => {
+                            setMenuType(menu.value);
+                            setEntree("");
+                            setPlat("");
+                            setDessert("");
+                            setBoisson("");
+                          }}
+                          className={cn(
+                            "relative rounded-[28px] border px-6 py-7 text-left transition-all duration-300",
+                            isActive
+                              ? "border-[#d4a017] bg-[#f8f5ef] shadow-sm"
+                              : "border-[#e7ded4] bg-[#fbfaf8] hover:border-[#d4a017]/40"
+                          )}
+                        >
+                          <div className="pr-10">
+                            <h4 className="font-serif text-[22px] text-[#2d2926]">
+                              {menu.label}
+                            </h4>
+                            <p className="mt-2 text-[15px] text-[#8a8178]">
+                              {menu.subtitle}
+                            </p>
+                          </div>
+
+                          {isActive && (
+                            <span className="absolute right-5 top-5 inline-flex h-8 w-8 items-center justify-center rounded-full border-2 border-[#d4a017] text-[#d4a017]">
+                              <CheckCircle2 className="h-4 w-4" />
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="mt-8 rounded-[28px] border border-[#e7ded4] bg-white p-6">
+                    <p className="mb-4 text-sm text-[#8a8178]">
+                      Choisissez les options du menu sélectionné
+                    </p>
+
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                      <div>
+                        <label className="mb-2 block text-sm font-medium text-[#5c544d]">
+                          Entrée
+                        </label>
+                        <div className="relative">
+                          <select
+                            value={entree}
+                            onChange={(e) => setEntree(e.target.value)}
+                            className="h-14 w-full appearance-none rounded-2xl border border-[#e7ded4] bg-[#fcfbf8] px-4 pr-12 text-[15px] text-[#2d2926] outline-none focus:border-[#d4a017] focus:ring-2 focus:ring-[#d4a017]/20"
+                          >
+                            <option value="">Choisir une entrée</option>
+                            {selectedMenu.entrees.map((item) => (
+                              <option key={item} value={item}>
+                                {item}
+                              </option>
+                            ))}
+                          </select>
+                          <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#8a8178]" />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="mb-2 block text-sm font-medium text-[#5c544d]">
+                          Plat
+                        </label>
+                        <div className="relative">
+                          <select
+                            value={plat}
+                            onChange={(e) => setPlat(e.target.value)}
+                            className="h-14 w-full appearance-none rounded-2xl border border-[#e7ded4] bg-[#fcfbf8] px-4 pr-12 text-[15px] text-[#2d2926] outline-none focus:border-[#d4a017] focus:ring-2 focus:ring-[#d4a017]/20"
+                          >
+                            <option value="">Choisir un plat</option>
+                            {selectedMenu.plats.map((item) => (
+                              <option key={item} value={item}>
+                                {item}
+                              </option>
+                            ))}
+                          </select>
+                          <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#8a8178]" />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="mb-2 block text-sm font-medium text-[#5c544d]">
+                          Dessert
+                        </label>
+                        <div className="relative">
+                          <select
+                            value={dessert}
+                            onChange={(e) => setDessert(e.target.value)}
+                            className="h-14 w-full appearance-none rounded-2xl border border-[#e7ded4] bg-[#fcfbf8] px-4 pr-12 text-[15px] text-[#2d2926] outline-none focus:border-[#d4a017] focus:ring-2 focus:ring-[#d4a017]/20"
+                          >
+                            <option value="">Choisir un dessert</option>
+                            {selectedMenu.desserts.map((item) => (
+                              <option key={item} value={item}>
+                                {item}
+                              </option>
+                            ))}
+                          </select>
+                          <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#8a8178]" />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="mb-2 block text-sm font-medium text-[#5c544d]">
+                          Boisson
+                        </label>
+                        <div className="relative">
+                          <select
+                            value={boisson}
+                            onChange={(e) => setBoisson(e.target.value)}
+                            className="h-14 w-full appearance-none rounded-2xl border border-[#e7ded4] bg-[#fcfbf8] px-4 pr-12 text-[15px] text-[#2d2926] outline-none focus:border-[#d4a017] focus:ring-2 focus:ring-[#d4a017]/20"
+                          >
+                            <option value="">Choisir une boisson</option>
+                            {selectedMenu.boissons.map((item) => (
+                              <option key={item} value={item}>
+                                {item}
+                              </option>
+                            ))}
+                          </select>
+                          <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#8a8178]" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
